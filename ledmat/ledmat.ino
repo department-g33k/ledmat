@@ -9,9 +9,9 @@
 #define DATA_PIN  11
 #define CS_PIN    10
 
-MD_Parola P = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
+MD_Parola P = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES); // Create the 'P' object for the display
 
-MD_MAX72XX::fontType_t xantofont[] PROGMEM = {
+MD_MAX72XX::fontType_t xantofont[] PROGMEM = { // This is the font called "xantofont"
   0,    // 0 - 'Empty Cell'
   5, 62, 91, 79, 91, 62,    // 1 - 'Sad Smiley'
   5, 62, 107, 79, 107, 62,    // 2 - 'Happy Smiley'
@@ -70,7 +70,7 @@ MD_MAX72XX::fontType_t xantofont[] PROGMEM = {
   6, 0, 1, 225, 17, 9, 7,   // 55 - '7'
   6, 0, 118, 137, 137, 137, 118,    // 56 - '8'
   6, 0, 78, 145, 145, 145, 126,   // 57 - '9'
-  1, 36,    // 58 - ':'
+  1, 36,    // 58 - ':'// wait .8ms - this is blocking
   2, 128, 104,    // 59 - ';'
   4, 8, 20, 34, 65,   // 60 - '<'
   5, 20, 20, 20, 20, 20,    // 61 - '='
@@ -91,7 +91,7 @@ MD_MAX72XX::fontType_t xantofont[] PROGMEM = {
   5, 127, 64, 64, 64, 64,   // 76 - 'L'
   5, 127, 2, 28, 2, 127,    // 77 - 'M'
   5, 127, 4, 8, 16, 127,    // 78 - 'N'
-  5, 62, 65, 65, 65, 62,    // 79 - 'O'
+  5, 62, 65, 65, 65, 62,    // 79 - 'O'// wait .8ms - this is blocking
   5, 127, 9, 9, 9, 6,   // 80 - 'P'
   5, 62, 65, 81, 33, 94,    // 81 - 'Q'
   5, 127, 9, 25, 41, 70,    // 82 - 'R'
@@ -112,7 +112,7 @@ MD_MAX72XX::fontType_t xantofont[] PROGMEM = {
   5, 32, 84, 84, 120, 64,   // 97 - 'a'
   5, 127, 40, 68, 68, 56,   // 98 - 'b'
   5, 56, 68, 68, 68, 40,    // 99 - 'c'
-  5, 56, 68, 68, 40, 127,   // 100 - 'd'
+  5, 56, 68, 68, 40, 127,   // 100 - 'd'// wait .8ms - this is blocking
   5, 56, 84, 84, 84, 24,    // 101 - 'e'
   4, 8, 126, 9, 2,    // 102 - 'f'
   5, 24, 164, 164, 156, 120,    // 103 - 'g'
@@ -268,13 +268,16 @@ MD_MAX72XX::fontType_t xantofont[] PROGMEM = {
   5, 0, 60, 60, 60, 60,   // 253 - 'Centered Square'
   5, 255, 129, 129, 129, 255,   // 254 - 'Full Frame'
   5, 255, 255, 255, 255, 255,   // 255 - 'Full Block'
-};
+}; // End font
 
-int serial_in = 2,pulse;
+int serial_in = 2,pulse; // this defines serial_in as 2 and a variable called pulse as empty/null
+                         // I think much of this file is an attempt to create a software serial port
+                         // on pin 2.  Not sure why they aren't just using arduino's SoftwareSerial
+                         // library instead to get rid of alot of this code.
 long temp;
 bool begin_=1;
 volatile long duration=0,m1,m2;
-volatile int i=0,arr[90],toggle=0;
+volatile int i=0,arr[90],toggle=0; // array "arr" is defined here to store bits from homemade serial port
 String packet="",current_time="",packet_="";
 
 void getbytes(String strbyte);
@@ -284,33 +287,40 @@ int twopwr(int);
 
 void setup()
 {
- P.begin();
-  P.setIntensity(0);
-  P.setFont(xantofont);
+ P.begin(); // Initialize the display
+  P.setIntensity(0); // Set intensity of display to 0
+  P.setFont(xantofont); // Tell the display what fonmt it is using
 
  
-  Serial.begin(115200);
-  pinMode(serial_in, INPUT);
-  digitalWrite(serial_in,HIGH);
+  Serial.begin(115200);  // Initialize  built-in serial on arduino
+  pinMode(serial_in, INPUT); // Setting pin 2 to input 
+  digitalWrite(serial_in,HIGH); // enable built-in pullup resistor on pin 2
 
+// The code below is confusing for me as well.  Please note that pulseIn is blocking - nothing 
+// else can happen while pulseIn is getting the length of a pulse.  For some reason it's 
+// looking at the psuedo-software-serial line and waiting for a low pulse.  I don't know 
+// If this is something that necessary to talk to the stackmat timer.
      while(1)
-   
   {
-    temp=pulseIn(serial_in, LOW);
-    Serial.print("temp = ");
+    temp=pulseInLong(serial_in, LOW); // Waits for pin to go from high to low, starts timing and then returns pulse
+                                      // length in ms.  Technically pulseIn can work for pulses up to 3 minutes.
+                                      // Also temp is defined as a long - I think that means that pulseInLong() should
+                                      // be used instead of pulseIn()
+    Serial.print("temp = ");          // print the length of the pulse
     Serial.println(temp);
-    if(temp>56000 and temp<66000)
-    break;
+    if(temp>56000 and temp<66000) // if the pusle length is between 56 and 66 seconds, 
+    break;                        // exit - otherwise do the loop again
   }
-  
+// end confusion
 }
 
 void loop() {
 
   i=0,toggle=0;
-  for(int k=0;k<90;k++)
-  arr[k]=0;
-  long test_=millis();
+  for(int k=0;k<90;k++) { // set each element of the array k to 0
+    arr[k]=0;
+  }
+  long test_=millis(); // get current millisecond count and store it in test_
 
   /*
   attachInterrupt(digitalPinToInterrupt(serial_in), isr, CHANGE);
@@ -327,33 +337,31 @@ void loop() {
 
   delayMicroseconds(416);
   
-            
-            for(int lx=0;lx<30;lx++)
+// T think this is the beginning of the homemade bit-banged serial port:
+            for(int lx=0;lx<30;lx++) // Loop for the first 30 bits (0->29)
             {
-              arr[lx]=digitalRead(serial_in);    
-              delayMicroseconds(810);
+              arr[lx]=digitalRead(serial_in); // save the bit2 status in array "arr"
+              delayMicroseconds(810); // wait .8ms - this is blocking
             }
             
-            arr[30]=digitalRead(serial_in);           
+            arr[30]=digitalRead(serial_in); // read in bit 30 and store it in "arr"
             delayMicroseconds(810);
             
-            for(int lx=31;lx<90;lx++)
+            for(int lx=31;lx<90;lx++) // loop for bits 31 to 89 (31 -> 89)
             {
-              arr[lx]=digitalRead(serial_in);    
-              delayMicroseconds(810);
+              arr[lx]=digitalRead(serial_in); // save the bit2 status in array "arr"
+              delayMicroseconds(810); // wait .8ms - this is blocking
             }
-            
-            
-            
-            
+// Now we have an array "arr[0] to arr[89] with 90 bits that were grabbed off of pin 2   
+      
   for(int k=0;k<90;k++)
   {
-   Serial.print(String(arr[k]));
+   Serial.print(String(arr[k])); // probably for troubleshooting, we are printing all 90 bits
+                                 // to the serial monitor.
   }
-  
-  
-  Serial.print("\n");
-  pulse=1;packet="";current_time="";
+  Serial.print("\n"); // print a newline
+  pulse=1;
+  current_time="";
   /*
   for(int k=1;arr[k]!=0;k++)
   {
@@ -364,16 +372,20 @@ void loop() {
     pulse=!pulse;
   }
   */
+// We are not converting the individual bits in the array "arr" to strings of 1's and 0's.
+// Yes, I mean character strings.  We will eventually get a 90 character length string called
+// "packet"
   packet="";
   for(int k=0;k<90;k++)
   {
     if(arr[k]==0){
-      packet+="1";
+      packet+="1"; // If the bit read into the array is 0, add a "1" to the end of packet
     }
     else
-    packet+="0";
+    packet+="0"; // else add a "0" to the end of packet
     }
   //  Serial.println(packet);
+// Here's where we are taking the string of bits and converting it to the proper bytes:
  for(int k=1;k<=5;k++)
  getbytes(packet.substring(k*10+1,(k+1)*10-1));
 
