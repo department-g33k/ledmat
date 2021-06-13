@@ -3,13 +3,13 @@
 #include <SPI.h>
 
 
+#define HARDWARE_TYPE MD_MAX72XX::FC16_HW
 #define MAX_DEVICES 5
 #define CLK_PIN   13
 #define DATA_PIN  11
 #define CS_PIN    10
 
-
-MD_Parola P = MD_Parola(CS_PIN, MAX_DEVICES);
+MD_Parola P = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
 
 MD_MAX72XX::fontType_t xantofont[] PROGMEM = {
   0,    // 0 - 'Empty Cell'
@@ -297,6 +297,8 @@ void setup()
    
   {
     temp=pulseIn(serial_in, LOW);
+    Serial.print("temp = ");
+    Serial.println(temp);
     if(temp>56000 and temp<66000)
     break;
   }
@@ -533,4 +535,3 @@ char qj_fix(char ch)
     
   }
 }
-

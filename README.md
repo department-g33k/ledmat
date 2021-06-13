@@ -1,15 +1,34 @@
-# ledmat
-Arduino-based project to make a tournament display for speedcubing and speedstacking that is compatible with all major timers. Uses MAX7219 driven LED matrices as the display.
+# LEDmat
 
-First assemble the hardware according to the schematics. A full tutorial will be up shortly. Instructions given below are for the software only.
+Based upon the upstream repo, this is my attempt at a working display.
 
-1. Install the [Arduino IDE](https://www.arduino.cc/en/main/software).
-2. Download the libraries [MD_Parola](https://github.com/MajicDesigns/MD_Parola) and [MD_MAX2XX](https://github.com/MajicDesigns/MD_MAX72XX) using 'Clone or download' -> 'Download ZIP'.
-3. Extract the ZIPs to get two folders called MD_Parola-master and MD_MAX72XX-master. 
-4. Move these folders to the Documents\Arduino\Libraries folder (On Windows only. more info on library installation can be found [here](https://www.arduino.cc/en/guide/libraries))
-5. Open MD_MAX72XX-master\src\MD_MAX72XX.h. If it does not display well in notepad, try wordpad.
-6. Search for USE_PAROLA_HW and replace the 1 next to it with a 0. Search for your hardware (usually USE_FC16_HW, see the full tutorial for more information) and replace the 0 next to it with a 1. Save the file and close it.
-7. Download this repository and extract the ledmat.ino file. Open it, set the board to Arduino Nano in the Tools menu. Also make sure the correct Port is selected.
-8. Upload the sketch, plug in the stackmat and enjoy!
+There is/was decent documentation of how to use the code and setup the hardware, but the code itself doesn't have a ton of commments explaining things.
 
-![Prototype](https://raw.github.com/jayanth-rajakumar/ledmat/master/img_prototype.jpg)
+The first issue I came across was this:
+ 
+    while(1)
+     
+      {
+       temp=pulseIn(serial_in, LOW);
+       if(temp>56000 and temp<66000)
+         break;
+      }
+
+It's looping until it takes between 56,000 and 66,000 microseconds for the data pin coming in from the stackmat timer to go from LOW to HIGH.
+At idle, it rarely tops 28,000, so it takes repeated mashing of buttons on the timer to slow it down a bit.
+No clue why that's needed, but it works sporadically withouth it, and rarely works with it.
+
+There's also a great description of the protocol [in this reddit post](https://www.reddit.com/r/Cubers/comments/64czya/wip_stackmat_timer_support_for_twistytimer_app/dg19s4y/?utm_term=29267765170&context=3&utm_medium=comment_embed&utm_source=embed&utm_name=4444636c-5b2b-4f6e-8a48-3f5bc6cc87bc) that goes over the protocol itself.
+
+I attempted to have the arduino dump the packets it's collecting to serial, but from the data-dumps I collected, I'm not seeing well-defined bytes with Start 1's and End 0's.  It's all over the place.
+
+I'll keep this updated with progress, but as it stands I can get maybe 1 in 15 "solves" on the timer to actually come across to the display.
+
+There's also an existing body of this having been implemented in [Java](http://timhabermaas.github.io/stackmat.js/) as well as in a [web-interface](https://github.com/search?q=cstimer.net) for the website cstimer.net
+
+
+## References
+
+- MD_Parola library documentation: https://majicdesigns.github.io/MD_Parola/class_m_d___parola.html#a45d97a582ca1adabfe5cb40d66c4bbd2
+- MD_MAX72XX library documentation: https://majicdesigns.github.io/MD_MAX72XX/class_m_d___m_a_x72_x_x.html#a88ea7aada207c02282d091b7be7084e6ab1adfbd7e43930ccfc2317a62447d9f9
+
