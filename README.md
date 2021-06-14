@@ -26,6 +26,17 @@ I'll keep this updated with progress, but as it stands I can get maybe 1 in 15 "
 
 There's also an existing body of this having been implemented in [Java](http://timhabermaas.github.io/stackmat.js/) as well as in a [web-interface](https://github.com/search?q=cstimer.net) for the website cstimer.net
 
+# 6/13/2021 Update
+I ran the code with Tod's modifications.  As far as I can tell, that PulseIn() nonsense is just to wait until the timer turns on, but I have to "busy up" the timer with save sequences to get the pulse to slow down enough to pass that loop.  I'm leaving it in because I can't be sure it's not required, but it just seems...weird.
+
+```sample_output.txt``` contains a bunch of lines that were dumped by ```Serial.print(String(arr[k]))``` but I find it odd that they vary in length, most are 90 bits, but others are 85.
+
+Finally, I added lines to dump ```packet``` and ```charbuf``` to the console when it successfully reads a time, so we'd have some "good output" to look through.  ```good_output.txt``` contains those dumps.
+Curiously, one line is missing an "r" that I thought was a typo on my part, but the typo doesn't exist anywhere in the code, so it almost seems like the arduino's own USB-Serial port dropped a character.
+
+Last night, I also noticed that I got a time of 3.108 on the timer itself, but the display read 8:3.10, in essence the trailing digit was read as the leading digit.  All of that makes me wonder if there isn't a timing issue between the "packets" being read, and how they're being parsed out.
+
+Thanks for all the insight.
 
 ## References
 

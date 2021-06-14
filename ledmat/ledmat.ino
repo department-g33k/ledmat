@@ -356,10 +356,10 @@ void loop() {
       
   for(int k=0;k<90;k++)
   {
-   Serial.print(String(arr[k])); // probably for troubleshooting, we are printing all 90 bits
+   //Serial.print(String(arr[k])); // probably for troubleshooting, we are printing all 90 bits
                                  // to the serial monitor.
   }
-  Serial.print("\n"); // print a newline
+  //Serial.print("\n"); // print a newline
   pulse=1;
   current_time="";
   /*
@@ -396,6 +396,10 @@ void loop() {
 
   if(isDigit(charbuf[0]) and isDigit(charbuf[6]) and isDigit(charbuf[2]) and isDigit(charbuf[3]) and isDigit(charbuf[5]))
   {
+    Serial.print("Packet = ");
+    Serial.println(packet);
+    Serial.print("Charbuf = ");
+    Serial.println(charbuf);
     P.displayText(charbuf, PA_LEFT, 0, 0, PA_PRINT, PA_SCROLL_UP);
     P.displayAnimate(); 
   }
@@ -408,6 +412,10 @@ void loop() {
 
         if(isDigit(charbuf[0]) and isDigit(charbuf[6]) and isDigit(charbuf[2]) and isDigit(charbuf[3]) and isDigit(charbuf[5]))
         {
+          Serial.print("Packet = ");
+          Serial.println(packet);
+          Serial.print("Charbuf = ");
+          Serial.println(charbuf);
           P.displayText(charbuf, PA_LEFT, 0, 0, PA_PRINT, PA_SCROLL_UP);
           P.displayAnimate(); 
         }
