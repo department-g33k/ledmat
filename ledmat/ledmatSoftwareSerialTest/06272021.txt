@@ -1,0 +1,27 @@
+In the default configuration, with ledmatInvertSerial = 1, I was getting this output throughout all phases (idle, time running, result displayed)
+
+
+I- I:II:00 | I- I:II:00 | I- I:II:00 | Error! Invalid Checksum!!  48 != 0
+I- 0:00:00 | Error! Invalid Checksum!!  48 != 0
+I- 0:00:00 | Error! Invalid Checksum!!  48 != 0
+I- 0:00:00 | I- 0:00:00 | I- 0:00:00 | Error! Invalid Checksum!!  10 != 66
+I- I:I0:0@ | I- I:I0:0@ | Error! Invalid Checksum!!  48 != 100
+I- 0:II:II | I- 0:II:II | I- 0:II:II | I- 0:II:II | I- 0:II:II | I- 0:II:II | I- 0:II:II | I- 0:II:II | I- 0:II:II | I- 0:II:II | Error! Invalid Checksum!!  48 != 75
+I- 0:0I:II | I- 0:0I:II | I- 0:0I:II | I- 0:0I:II | I- 0:0I:II | I- 0:0I:II | I- 0:0I:II | I- 0:0I:II | Error! Invalid Checksum!!  48 != 25
+I- I:00:00 | 
+
+
+I changed ledmatInvertSerial = 0, and got similar results:
+
+
+Thinking perhaps it was 
+I- I:II:00 | I- I:II:00 | I- I:II:00 | Error! Invalid Checksum!!  48 != 0
+I- 0:00:00 | Error! Invalid Checksum!!  48 != 0
+I- 0:00:00 | Error! Invalid Checksum!!  48 != 0
+I- 0:00:00 | I- 0:00:00 | I- 0:00:00 | Error! Invalid Checksum!!  10 != 66
+I- I:I0:0@ | I- I:I0:0@ | Error! Invalid Checksum!!  48 != 100
+I- 0:II:II | I- 0:II:II | I- 0:II:II | I- 0:II:II | I- 0:II:II | I- 0:II:II | I- 0:II:II | I- 0:II:II | I- 0:II:II | I- 0:II:II | Error! Invalid Checksum!!  48 != 75
+I- 0:0I:II | I- 0:0I:II | I- 0:0I:II | I- 0:0I:II | I- 0:0I:II | I- 0:0I:II | I- 0:0I:II | I- 0:0I:II | Error! Invalid Checksum!!  48 != 25
+I- I:00:00 | 
+
+I'm not sure what to make of that...
