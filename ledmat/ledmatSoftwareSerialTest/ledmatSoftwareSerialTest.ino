@@ -57,11 +57,11 @@ void loop() {
                             // count of the buffer and print it.
       Serial.print(buf[0]);
       Serial.print("-");
+      Serial.print(":");
       Serial.print(buf[1]);
-      Serial.print(":");
       Serial.print(buf[2]);
+      Serial.print(".");
       Serial.print(buf[3]);
-      Serial.print(":");
       Serial.print(buf[4]);
       Serial.print(buf[5]);
     }
