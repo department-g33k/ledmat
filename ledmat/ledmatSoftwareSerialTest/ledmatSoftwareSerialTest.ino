@@ -1,13 +1,22 @@
 /* 
-  Software Serial test of LEDMAT protocol - number 2!
+  Software Serial test of LEDMAT protocol - number 4!
   
-  Second attempt - now we are going to make sure the output data always starts with a ascii
-  control character, followed by the remaining 7 digits.  
+  Fourth attempt:
 
-  It will read in the data from the ledmat on arduino pin 2, and print it out to the usb
-  serial to the serial monitor in the arduino ide.
+  I discovered putting whole tests and functions into a define - this allows he compilier to substitute
+  complex checks and features into other parts of the program.  awesome! Discovered from https://github.com/fw42
+  in this repo: https://github.com/fw42/atmel/tree/master/stackmat
+
+  I pulled alot of concepts from what he is doing and simplified it for arduino.
 */
+
+// The magical defines:
+#define state_is_valid(s) (s=='I' || s=='A' || s==' ' || s=='S' || s=='L' || s=='R' || s=='C')
+#define checksum(data) ( (data[1]-'0')+(data[2]-'0')+(data[3]-'0')+(data[4]-'0')+(data[5]-'0')+64 )
+#define append(array, length, item) { for(uint8_t i=0; i<length-1; i++) { array[i] = array[i+1]; };  array[length-1] = item; }
+
 #include <SoftwareSerial.h>
+
 const int ledmatRXPin = 2;
 const int ledmatTXPin = 3; // I don't think we need this pin, but software serial expects 
                            // to talk to an RX and TX pin, so we include it below.  Don't
@@ -18,30 +27,44 @@ const int ledmatInvertSerial = 1; // I think the ledmat uses inverted serial - i
                                   // set this value to 0 if that's not true.
 SoftwareSerial ledMatSerial(ledmatRXPin, ledmatTXPin, ledmatInvertSerial); // Setup software serial
 
-char t[100]={}; // variable for the time results - giving it more space just in case.
-int output=0;
+// Buffer for the last seven received bytes
+// state, min, sec1, sec2, msec1, msec2, checksum
+char buf[7]={0,0,0,0,0,0,0};
+byte inCount=0; // Counter for how many bytes we have received.
+
 void setup() {
-  Serial.begin(115200); // Set up serial communication to computer at 115200 bps.
+  Serial.begin(115200);     // Set up serial communication to computer at 115200 bps.
   ledMatSerial.begin(1200); // enable the ledmat serial at 1200bps
+  Serial.println("Here we go again!");
 }
 
 void loop() {
-  memset(t, 0x00, sizeof(t)); // chear the array we are using as a serial buffer.
-  output=0; // I'm setting this variable to 0.  Only print output if this is a 1.
-  for (int i=0; ledMatSerial.available(); i++) { // Create a loop that will count only when there
-                                                 // are characters available from the serial buffer.
-                                                 // Hopefully there is enough of a break between character 
-                                                 // groups that this won't just fill up
-    output=1; // We received some data, so set this to a one
-    if (i > 99) { break; } // kill this loop if i>99.  Otherwise we'll never get any other output.
-                           // If we keep hitting this, then the ledmat doesn't have any breaks between
-                           // character groups.  Have to find another way to synchronize to the data in that case.
-    t[i]=ledMatSerial.read();
-    Serial.print("."); // We'll print a period for every character received.  Shouldn't be more than 7.
-  }
-  if (output) { // If we gathered anything from the above loop, output will be 1, so do the following:
-    Serial.println(); // Now we print a newline -to seperate it from the ".......".
-    Serial.println(t); // these are the characters we gathered in the for loop.
-    output=0; // clear the output flag, so we don't print the data more than once.
-  }
+  while(ledMatSerial.available()) {
+    char inData=ledMatSerial.read();
+    if(inData != 10 && inData != 13) {  // as long as it's not a cr or lf
+      append(buf, 7, inData);           // add the data to the buffer,
+                                        // using the fancy 'append' define
+                                        // at the top of the sketch.
+      inCount++;                        // increment the counter
+    }
+    // Now we check to see if we have 7 or more characters, and
+    // if the computer checksum matches what's stored in the pos 6 of the 
+    // buffer and if the state of the first character is valid.  I am using
+    // the defines 'checksum' and 'state_is_valid' from the top of the
+    // sketch to simplify the following if statement.
+    if(inCount >= 7 && checksum(buf) == buf[6] && state_is_valid(buf[0])) {
+      inCount=0;            // we're going to print something, so reset the
+                            // count of the buffer and print it.
+      Serial.print(buf[0]);
+      Serial.print("-");
+      Serial.print(buf[1]);
+      Serial.print(":");
+      Serial.print(buf[2]);
+      Serial.print(buf[3]);
+      Serial.print(":");
+      Serial.print(buf[4]);
+      Serial.print(buf[5]);
+    }
+  }  
+  
 }
