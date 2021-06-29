@@ -52,7 +52,8 @@ void loop() {
     // buffer and if the state of the first character is valid.  I am using
     // the defines 'checksum' and 'state_is_valid' from the top of the
     // sketch to simplify the following if statement.
-    if(inCount >= 7 && checksum(buf) == buf[6] && state_is_valid(buf[0])) {
+    // if(inCount >= 7 && checksum(buf) == buf[6] && state_is_valid(buf[0])) {
+    if(inCount >= 7 && checksum(buf) == buf[6]) {
       inCount=0;            // we're going to print something, so reset the
                             // count of the buffer and print it.
       Serial.print(buf[0]);
@@ -62,8 +63,16 @@ void loop() {
       Serial.print(buf[2]);
       Serial.print(".");
       Serial.print(buf[3]);
+      Serial.print(".");
       Serial.print(buf[4]);
       Serial.print(buf[5]);
+    } else if(inCount >= 7 && checksum(buf) != buf[6]) {
+      inCount=0;
+      Serial.print("CKsum Err: ");
+      Serial.print(checksum(buf));
+      Serial.print("!=");
+      Serial.println(buf[6]);
+
     }
   }  
   
