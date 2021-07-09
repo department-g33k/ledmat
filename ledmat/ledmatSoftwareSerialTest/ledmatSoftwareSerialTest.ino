@@ -46,7 +46,7 @@ MD_Parola myDisplay = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
 
 const int updateoffset = 10;
 int updatecycle = 0;
-
+String displaytext = "test";
 const int ledmatRXPin = 2;
 const int ledmatTXPin = 3; // I don't think we need this pin, but software serial expects 
                            // to talk to an RX and TX pin, so we include it below.  Don't
@@ -71,7 +71,7 @@ void setup() {
   myDisplay.begin();
 
   // Set the intensity (brightness) of the display (0-15)
-  myDisplay.setIntensity(0);
+  myDisplay.setIntensity(10);
 
   // Clear the display
   myDisplay.displayClear();
@@ -89,6 +89,15 @@ delay(500);
 }
 
 void loop() {
+
+//Read the dimmer pot & assign value to display brightness
+
+myDisplay.setIntensity(map(analogRead(A0), 0, 1023, 1, 15));
+Serial.print("Brightness: ");
+Serial.println(map(analogRead(A0), 0, 1023, 1, 15));
+
+
+  
   while(ledMatSerial.available()) {
     char inData=ledMatSerial.read();
     if(inData != 10 && inData != 13) {  // as long as it's not a cr or lf
@@ -108,12 +117,9 @@ void loop() {
       Serial.println(buf);  // just print the entire buffer!  Final character
                             // is the checksum!
     }
-  updatecycle++;
-  if (updatecycle > updateoffset) {
-    myDisplay.print(buf);
-    updatecycle = 0;
-    }
   
   }  
-  
+      displaytext = buf;
+      myDisplay.print(displaytext.substring(1,3)+"."+displaytext.substring(4,7));
+      
 }
