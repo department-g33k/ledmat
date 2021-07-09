@@ -22,12 +22,30 @@
   I pulled alot of concepts from what he is doing and simplified it for arduino.
 */
 
+//Libraries for display:
+#include <MD_Parola.h>
+#include <MD_MAX72xx.h>
+#include<SPI.h>
+
+
 // The magical defines:
 #define state_is_valid(s) (s=='I' || s=='A' || s==' ' || s=='S' || s=='L' || s=='R' || s=='C')
 #define checksum(data) ( (data[1]-'0')+(data[2]-'0')+(data[3]-'0')+(data[4]-'0')+(data[5]-'0')+(data[6]-'0')+64 )
 #define append(array, length, item) { for(uint8_t i=0; i<length-1; i++) { array[i] = array[i+1]; };  array[length-1] = item; }
 
 #include <SoftwareSerial.h>
+
+//Constants for display bits:
+#define HARDWARE_TYPE MD_MAX72XX::FC16_HW
+#define MAX_DEVICES 8
+#define CLK_PIN   13
+#define DATA_PIN  11
+#define CS_PIN    10
+
+MD_Parola myDisplay = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
+
+const int updateoffset = 10;
+int updatecycle = 0;
 
 const int ledmatRXPin = 2;
 const int ledmatTXPin = 3; // I don't think we need this pin, but software serial expects 
@@ -48,6 +66,26 @@ void setup() {
   Serial.begin(115200);     // Set up serial communication to computer at 115200 bps.
   ledMatSerial.begin(1200); // enable the ledmat serial at 1200bps
   Serial.println("Here we go again!");
+
+    // Intialize the object
+  myDisplay.begin();
+
+  // Set the intensity (brightness) of the display (0-15)
+  myDisplay.setIntensity(0);
+
+  // Clear the display
+  myDisplay.displayClear();
+
+myDisplay.setTextAlignment(PA_LEFT);
+myDisplay.print("Luke");
+delay(500);
+myDisplay.setTextAlignment(PA_CENTER);
+myDisplay.print("Solves");
+delay(500);
+myDisplay.setTextAlignment(PA_RIGHT);
+myDisplay.print("Cubes");
+delay(500);
+
 }
 
 void loop() {
@@ -70,6 +108,12 @@ void loop() {
       Serial.println(buf);  // just print the entire buffer!  Final character
                             // is the checksum!
     }
+  updatecycle++;
+  if (updatecycle > updateoffset) {
+    myDisplay.print(buf);
+    updatecycle = 0;
+    }
+  
   }  
   
 }
