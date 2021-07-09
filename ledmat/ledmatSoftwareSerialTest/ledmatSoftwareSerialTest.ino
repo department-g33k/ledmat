@@ -1,8 +1,20 @@
 /* 
-  Software Serial test of LEDMAT protocol - number 4!
+  Software Serial test of LEDMAT protocol - number 5!
   
-  Fourth attempt:
+  Fifth and final test before integrating the LED display!
+-------------------
+  I discovered that the Stackmat has changed the number of bytes they transmit.  Older StackMat's transmit:
+  minutes, 10seconds, seconds, 10milliseconds, milliseconds, checksum
 
+  Newer ones transmit an extra byte for the milliseconds:
+  minutes, 10seconds, seconds, 100milliseconds, 10milliseconds, milliseconds, checksum
+
+  because of this, what I thought was the checksum byte was almost always wrong, hence all of the checksum errors.
+  I purchased a Stackmat to discover this.  I added the extra byte to the buffer and changed the define that checks
+  the checksum to add in the additional byte.  Now I am getting a reliable display on the serial monitor.
+
+  Next is integration of the LED display!!
+-------------------
   I discovered putting whole tests and functions into a define - this allows he compilier to substitute
   complex checks and features into other parts of the program.  awesome! Discovered from https://github.com/fw42
   in this repo: https://github.com/fw42/atmel/tree/master/stackmat
@@ -12,7 +24,7 @@
 
 // The magical defines:
 #define state_is_valid(s) (s=='I' || s=='A' || s==' ' || s=='S' || s=='L' || s=='R' || s=='C')
-#define checksum(data) ( (data[1]-'0')+(data[2]-'0')+(data[3]-'0')+(data[4]-'0')+(data[5]-'0')+64 )
+#define checksum(data) ( (data[1]-'0')+(data[2]-'0')+(data[3]-'0')+(data[4]-'0')+(data[5]-'0')+(data[6]-'0')+64 )
 #define append(array, length, item) { for(uint8_t i=0; i<length-1; i++) { array[i] = array[i+1]; };  array[length-1] = item; }
 
 #include <SoftwareSerial.h>
@@ -29,7 +41,7 @@ SoftwareSerial ledMatSerial(ledmatRXPin, ledmatTXPin, ledmatInvertSerial); // Se
 
 // Buffer for the last seven received bytes
 // state, min, sec1, sec2, msec1, msec2, checksum
-char buf[7]={0,0,0,0,0,0,0};
+char buf[9]={0,0,0,0,0,0,0,0,0};
 byte inCount=0; // Counter for how many bytes we have received.
 
 void setup() {
@@ -42,37 +54,21 @@ void loop() {
   while(ledMatSerial.available()) {
     char inData=ledMatSerial.read();
     if(inData != 10 && inData != 13) {  // as long as it's not a cr or lf
-      append(buf, 7, inData);           // add the data to the buffer,
+      append(buf, 8, inData);           // add the data to the buffer,
                                         // using the fancy 'append' define
                                         // at the top of the sketch.
       inCount++;                        // increment the counter
     }
-    // Now we check to see if we have 7 or more characters, and
-    // if the computer checksum matches what's stored in the pos 6 of the 
+    // Now we check to see if we have 8 or more characters, and
+    // if the computer checksum matches what's stored in the pos 7 of the 
     // buffer and if the state of the first character is valid.  I am using
     // the defines 'checksum' and 'state_is_valid' from the top of the
     // sketch to simplify the following if statement.
-    // if(inCount >= 7 && checksum(buf) == buf[6] && state_is_valid(buf[0])) {
-    if(inCount >= 7 && checksum(buf) == buf[6]) {
+    if(inCount > 7 && checksum(buf) == buf[7] && state_is_valid(buf[0])) {
       inCount=0;            // we're going to print something, so reset the
                             // count of the buffer and print it.
-      Serial.print(buf[0]);
-      Serial.print("-");
-      Serial.print(":");
-      Serial.print(buf[1]);
-      Serial.print(buf[2]);
-      Serial.print(".");
-      Serial.print(buf[3]);
-      Serial.print(".");
-      Serial.print(buf[4]);
-      Serial.print(buf[5]);
-    } else if(inCount >= 7 && checksum(buf) != buf[6]) {
-      inCount=0;
-      Serial.print("CKsum Err: ");
-      Serial.print(checksum(buf));
-      Serial.print("!=");
-      Serial.println(buf[6]);
-
+      Serial.println(buf);  // just print the entire buffer!  Final character
+                            // is the checksum!
     }
   }  
   
