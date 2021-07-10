@@ -92,9 +92,11 @@ void loop() {
 
 //Read the dimmer pot & assign value to display brightness
 
-myDisplay.setIntensity(map(analogRead(A0), 0, 1023, 1, 15));
+myDisplay.setIntensity(map(analogRead(A0), 0, 1009, 0, 15));
 Serial.print("Brightness: ");
-Serial.println(map(analogRead(A0), 0, 1023, 1, 15));
+Serial.print(map(analogRead(A0), 0, 1023, 1, 15));
+Serial.print(" Raw value: ");
+Serial.println(analogRead(A0));
 
 
   
@@ -119,7 +121,10 @@ Serial.println(map(analogRead(A0), 0, 1023, 1, 15));
     }
   
   }  
+      
       displaytext = buf;
-      myDisplay.print(displaytext.substring(1,3)+"."+displaytext.substring(4,7));
+      if (displaytext.length() > 7) {
+      myDisplay.print(displaytext.substring(1,2)+":"+displaytext.substring(2,4)+"."+displaytext.substring(4,7));
+            }
       
 }
